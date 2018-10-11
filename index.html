@@ -48,29 +48,33 @@
                 Add Train
             </div>
             <div class="card-body">
-            <form>
-                <div class="form-group">
-                    <label for="nameInput">Train Name</label>
-                    <input type="text" class="form-control" id="nameInput">
-                </div>
-                <div class="form-group">
-                    <label for="destinationInput">Destination</label>
-                    <input type="text" class="form-control" id="destinationInput">
-                </div>
-                <div class="form-group">
-                    <label for="firstTime">First Train Time (HH:mm military time)</label>
-                    <input type="text" class="form-control" id="initialTimeInput">
-                </div>
-                <div class="form-group">
-                    <label for="frequency">Frequency (min)</label>
-                    <input type="number" class="form-control" id="frequencyInput">
-                </div>
-                <button type="submit" class="btn btn-primary">Submit</button>
-            </form>
-        </div>
+                <form class="needs-validation">
+                    <div class="form-group" onsubmit="validInput()">
+                        <label for="nameInput">Train Name</label>
+                        <input type="text" class="form-control" id="nameInput" value="" required>
+                        <div class="valid-feedback"> Looks Good! </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="destinationInput">Destination</label>
+                        <input type="text" class="form-control" id="destinationInput" value="" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="firstTime">First Train Time (HH:mm military time)</label>
+                        <input type="text" class="form-control" id="timeInput" value="" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="frequency">Frequency (min)</label>
+                        <input type="number" class="form-control" id="frequencyInput" value="" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="submit">Submit</button>
+                </form>
+            </div>
         </div>
     </main>
-    <script src="assets/logic.js"></script>
+    <br>
+
+    <script src="https://www.gstatic.com/firebasejs/5.5.3/firebase.js"></script>
+    <script rel="text/javascript" src="assets/logic.js"></script>
 </body>
 
 </html>
