@@ -1,8 +1,22 @@
+body {
+    background: lightcyan;
+}
+
 header {
     text-align: center;
+    width: 80%;
+    background: black;
+    color: white;
+    margin: auto;
+    padding: 2%;
 }
 
 .card {
     width: 80%;
     margin: auto;
+}
+
+.card-header {
+    background: navy;
+    color: white;
 }
