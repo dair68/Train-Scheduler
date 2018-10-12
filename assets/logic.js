@@ -14,6 +14,9 @@ $(document).ready(function () {
     // Create a variable to reference the database.
     var database = firebase.database();
 
+    //current elements inside table
+    var trains = [];
+
     //submit button
     $("#submit").on("click", function (event) {
 
@@ -141,55 +144,164 @@ $(document).ready(function () {
     //retrieving trains from firebase and placing in table
     database.ref().on("value", function (snapshot) {
         console.log(snapshot.val());
-
         var obj = snapshot.val();
 
         //extracting data from firebase
         $.each(obj, function (key, value) {
-           // console.log(key);
+            // console.log(key);
             //console.log(value);
-
             var name = value.name;
-            var destination = value.destination;
-            var time = value.time;
-            var frequency = value.frequency;
 
-            //obtaining curent time
-            var d = new Date();
-            var date = d.toString();
-            //splits date into days, time, etc.
-            var dateParts = date.split(" ");
-            var currentTime = dateParts[4];
+            if (!trains.includes(name)) {
+                trains.push(name);
 
-            console.log(currentTime);
+                var destination = value.destination;
+                var time = value.time;
+                var frequency = value.frequency;
 
-            console.log(name);
-            console.log(destination);
-            console.log(time);
-            console.log(frequency);
-            console.log(date);
+                //obtaining curent time
+                var d = new Date();
+                var date = d.toString();
+                //splits date into days, time, etc.
+                var dateParts = date.split(" ");
+                var currentTime = dateParts[4];
 
-            var table = $("#trainSchedule");
-            var row = $("<tr>");
+                console.log(currentTime);
+                var minLeft = waitTime(time, currentTime, frequency);
+                var nextTime = addTime(currentTime, minLeft);
+                nextTime = toTwelveHourTime(nextTime);
+                // console.log(name);
+                // console.log(destination);
+                // console.log(time);
+                // console.log(frequency);
+                // console.log(date);
 
-            var nameEntry = $("<td>");
-            var destinationEntry = $("<td>");
-            var timeEntry = $("<td>");
-            var frequencyEntry = $("<td>");
+                var table = $("#trainSchedule");
+                var row = $("<tr>");
 
-            nameEntry.text(name);
-            destinationEntry.text(destination);
-            timeEntry.text(time);
-            frequencyEntry.text(frequency);
+                var nameEntry = $("<td>");
+                var destinationEntry = $("<td>");
+                var frequencyEntry = $("<td>");
+                var timeEntry = $("<td>");
+                var minAwayEntry = $("<td>");
+               
+                nameEntry.text(name);
+                destinationEntry.text(destination);
+                frequencyEntry.text(frequency);
+                timeEntry.text(nextTime);
+                minAwayEntry.text(minLeft);
+                
+                row.append(nameEntry);
+                row.append(destinationEntry);
+                row.append(frequencyEntry);
+                row.append(timeEntry);
+                row.append(minAwayEntry);
 
-            row.append(nameEntry);
-            row.append(destinationEntry);
-            row.append(frequencyEntry);
-            row.append(timeEntry);
-            table.append(row);
-
+                table.append(row);
+            }
         });
     });
+
+    //calculates minutes until next arrival time based on current time
+    function waitTime(firstTime, currentTime, frequency) {
+        //extracting hours/minutes
+        var firstHours = Number(firstTime.substr(0, 2));
+        var firstMin = Number(firstTime.substr(3, 2));
+        var currentHours = Number(currentTime.substr(0, 2));
+        //ensuring currentHours > firstHours
+        if (currentHours < firstHours) {
+            currentHours += 24;
+        }
+        var currentMin = Number(currentTime.substr(3, 2));
+
+        // console.log(firstHours);
+        // console.log(firstMin);
+        // console.log(currentHours);
+        // console.log(currentMin);
+
+        totalFirstMin = 60*firstHours + firstMin;
+        totalCurrentMin = 60*currentHours + currentMin;
+
+        console.log(totalFirstMin);
+        console.log(totalCurrentMin);
+
+        var freq = Number(frequency);
+        var minSinceLast = (totalCurrentMin - totalFirstMin) % freq;
+        var minToNext = freq - minSinceLast;
+
+        console.log(minSinceLast);
+
+        console.log(minToNext);
+        return minToNext;
+    }
+
+    //adds a certain number of minutes to some military time of the form HH:mm
+    function addTime(time, minutes) {
+        var hours = Number(time.substr(0, 2));
+        var min = Number(time.substr(3, 2));
+
+        var totalMin = 60*hours + min;
+        totalMin += minutes;
+
+        return militaryTime(totalMin);
+    }
+
+    //generates military time based on number of minutes, with 0->00:00, 1439->23:59
+    function militaryTime(minutes) {
+        var hours = Math.floor(minutes / 60);
+        var min = minutes % 60;
+
+        hours = hours.toString();
+        min = min.toString();
+
+        //placing 0 at front for times like 01:00 and 02:30
+        if(hours < 10) {
+            hours = "0" + hours;
+        }
+        //placing 0 at front for times like 10:05 and 23:06
+        if(min < 10) {
+            min = "0" + min;
+        }
+
+        return hours + ":" + min;
+    }
+
+    //converts a military time HH:mm to 12 hour time HH:mm AM/PM
+    function toTwelveHourTime(time) {
+        var hours = Number(time.substr(0, 2));
+        var min = Number(time.substr(3, 2));
+        var ending;
+
+        hours = hours % 24;
+
+        if(hours >= 12) {
+            ending = "PM";
+        }
+        else {
+            ending = "AM";
+        }
+
+        hours = hours % 12;
+
+        min = min.toString();
+
+        console.log(hours);
+        if(hours === 0) {
+            hours = "12";
+        }
+        //placing 0 at front for times like 01:00 and 02:30
+        else if(hours < 10) {
+            hours = hours.toString();
+            hours = "0" + hours;
+        }
+
+        //placing 0 at front for times like 10:05 and 23:06
+        if(min < 10) {
+            min = "0" + min;
+        }
+
+        return hours + ":" + min + " " + ending;
+    }
 
 
 });
