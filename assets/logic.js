@@ -11,6 +11,9 @@ $(document).ready(function () {
     };
     firebase.initializeApp(config);
 
+    // Create a variable to reference the database.
+    var database = firebase.database();
+
     //submit button
     $("#submit").on("click", function (event) {
 
@@ -36,7 +39,12 @@ $(document).ready(function () {
             $("#frequencyInput").val("");
 
             //sending information to firebase
-            
+            database.ref().push({
+                name: name,
+                destination: destination,
+                time: time,
+                frequency: frequency
+            });
         }
         else {
             event.preventDefault();
@@ -130,6 +138,58 @@ $(document).ready(function () {
         return false;
     }
 
+    //retrieving trains from firebase and placing in table
+    database.ref().on("value", function (snapshot) {
+        console.log(snapshot.val());
+
+        var obj = snapshot.val();
+
+        //extracting data from firebase
+        $.each(obj, function (key, value) {
+           // console.log(key);
+            //console.log(value);
+
+            var name = value.name;
+            var destination = value.destination;
+            var time = value.time;
+            var frequency = value.frequency;
+
+            //obtaining curent time
+            var d = new Date();
+            var date = d.toString();
+            //splits date into days, time, etc.
+            var dateParts = date.split(" ");
+            var currentTime = dateParts[4];
+
+            console.log(currentTime);
+
+            console.log(name);
+            console.log(destination);
+            console.log(time);
+            console.log(frequency);
+            console.log(date);
+
+            var table = $("#trainSchedule");
+            var row = $("<tr>");
+
+            var nameEntry = $("<td>");
+            var destinationEntry = $("<td>");
+            var timeEntry = $("<td>");
+            var frequencyEntry = $("<td>");
+
+            nameEntry.text(name);
+            destinationEntry.text(destination);
+            timeEntry.text(time);
+            frequencyEntry.text(frequency);
+
+            row.append(nameEntry);
+            row.append(destinationEntry);
+            row.append(frequencyEntry);
+            row.append(timeEntry);
+            table.append(row);
+
+        });
+    });
 
 
 });
